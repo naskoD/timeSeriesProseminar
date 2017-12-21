@@ -50,6 +50,8 @@ qt=false%
 %It also allows \cite{refa, refb}. Otherwise, the document does not compile.
 %  Error message: "White space in argument"
 \usepackage{cite}
+\usepackage[mathletters]{ucs}
+\usepackage[utf8x]{inputenc}
 
 
 %% If you need packages for other papers,
@@ -202,15 +204,80 @@ time series, forecasting, ensemble methods, machine learning, arbitrating
 \label{fig:bitcoin}
 \end{figure}
 
-		\subsubsection{Forecasting} \hspace{1cm}\\\\Time series forecasting represents the process of predicting the future values of the observed variable based on the already available data. In order to achieve that, dependencies among the available time series must be found, which then approximate the possible future values. Various methods were used over the years. They are in general divided  in two groups: linear and non-linear methods. The most significant of them will be wider presented  further in this paper. It's important to be noted that time series forecasting is just forecasting - the purpose is that the forecast is as close as possible to the future value, but there is no warranty for that. Generally applies that the deviation of the forecast increases with his time distance.\\\\ 
-
-Time series could be not-stationary (volatile) or stationary. In other words - to have higher or lower degree of stationarity. The distribution of the stationary one depends much more on a long term trend while the distribution of the not-stationary one - on occasional events. Example for an extremely stationary time series is the coin flipping over time, example for an extremely volatile one - the bitcoin price. Because of his characteristics the volatile time series is much harder to predict. His wide spread and importance led to the development of more complex (non-linear) methods for doing that. Those methods include and are based on some machine learning techniques like e.g. bagging and boosting and also on key machine learning tools like artificial neural networks. Time series forecasting is one of the classic and at the same time very important areas of the machine learning.
+		\subsubsection{Forecasting} \hspace{1cm}\\\\Time series forecasting represents the process of predicting the future values of the observed variable based on the already available data. In order to achieve that, dependencies among the available time series must be found, which then approximate the possible future values. Various methods were used over the years. They are in general divided  in two groups: linear and non-linear methods. The most significant of them will be wider presented  further in this paper. It's important to be noted that time series forecasting is just forecasting - the purpose is that the forecast is as close as possible to the future value, but there is no warranty for that. Generally applies that the deviation of the forecast increases with his time distance.\\\\ Time series could be not-stationary (volatile) or stationary. In other words - to have higher or lower degree of stationarity. The distribution of the stationary one depends much more on a long term trend while the distribution of the not-stationary one - on occasional events. Example for an extremely stationary time series is the coin flipping over time, example for an extremely volatile one - the bitcoin price. Because of his characteristics the volatile time series is much harder to predict. His wide spread and importance led to the development of more complex (non-linear) methods for doing that. Those methods include and are based on some machine learning techniques like e.g. bagging and boosting and also on key machine learning tools like artificial neural networks. Time series forecasting is one of the classic and at the same time very important areas of the machine learning.
 	\subsection{Origins and related topics}
 		\subsubsection{Machine Learning}\hspace{1cm}\\\\ 
-In the recent years, as many useful applications of machine learning have been developed and have become part of our everyday life, his significance increased. We hear more and more often the term on the news or read about it on the Internet. In many cases machine learning is used as a synonym for artificial intelligence (AI), which is incorrect. AI is field of computer science, which is studying and  applying approaches for making computers being able to execute cognitive tasks. Machine learning is one of those approaches and it's by far the most successful (widely used, with the most applications) one of them. His subject is the studying and the computer modelling of learning processes.\cite{AIvsML}\cite{Michalski1983}. \\\\ One common way to create a new machine learning process is to research the human learning mechanisms, to adapt them and then accordingly to simulate them  with algorithms. The artificial neural networks (commonly utilized machine learning tool) are example for that and they will be discussed thoroughly further in the paper. It is  restrictive to believe that the learning patterns that come from the nature are the only possible way for acquiring knowledge. Reserchers also try to manifacture their own ones. By doing this main criteria are the methods'  generality and performance rather than their psychological explanation\cite{Michalski1983}.
-\\\\				
-		 \paragraph{Decision trees}
-		 \paragraph{Artificial Neural Networks}
+In the recent years, as many useful applications of machine learning have been developed and have become part of our everyday life, his significance increased. We hear more and more often the term on the news or read about it on the Internet. In many cases machine learning is used as a synonym for artificial intelligence (AI), which is incorrect. AI is field of computer science, which is studying and  applying approaches for making computers being able to execute cognitive tasks\cite{AIvsML}. Machine learning is one of those approaches and it's by far the most successful (widely used, with the most applications) one of them\cite{quinlan1986induction}. His subject is the studying and the computer modelling of learning processes.\cite{Michalski1983}. \\\\ One common way to create a new machine learning process is to research the human learning mechanisms, to adapt them and then accordingly to simulate them  with algorithms. The artificial neural networks (commonly utilized machine learning tool) are example for that and they will be discussed thoroughly further in the paper. It is  restrictive to believe that the learning patterns that come from the nature are the only possible way for acquiring knowledge. Reserchers also try to manifacture their own ones. By doing this main criteria are the methods'  generality and performance rather than their psychological explanation\cite{Michalski1983}.\\\\ 
+In order to better understand one single learning methodology, we classify it by some meaningful parameters:
+\begin{enumerate}
+\item the amount of inference performed on the available information
+\item the representation of knowledge acquired by the learner. 
+\item the application domain of the collected knowledge 
+\end{enumerate}\hspace{1cm}\\Different amount of inference means that the learning system analyses the data more or less and makes more or less interdependencies between it. Example for no inference is the simple remembering of facts with no thoughts about them and any other already existing knowledge. Example for middle range inference is the learning from teacher or book that provides the learner positive and negative examples. The learner analyses the input data and makes some conclusion about it based mainly on his already existing knowledge. Example for extremely high level of inference is the learning from observation and the discovery. There is no source of certain information to learn from and the learner should discover it alone\cite{Michalski1983}. The high and the low level of inference of learning methods has both their pluses and minuses - it's much harder and slower to learn something just by yourself, but therefore you reach deeper understanding of the topic. When the learner is a real person and not a computer algorithm, it could be even dangerous for him. My driving instructor used to tell me that I can always learn to drive by myself, but to achieve it, I must break at least three cars. In order to prevent that he was there to teach me.\\\\
+There are a lot of different representations of knowledge that the learner can produce. Some popular examples include the decision trees that will be discussed in detail, parameters in algebraic expressions, formal grammars, graphs, computer programs, classification categories etc.\\\\
+We know from the near past and the present  (and for sure will hear more about it in the future) that the machine learning has a lot of applications. Some popular application domains of the learners are the self driving cars, speech and face recognition, the expert systems and of course - the subject of our paper - time series forecasting.  \\\\As next on this paper follow some presentation of key tools and techniques in machine learning at all and in the field of time series forecasting specifically.
+				
+\paragraph{Decision trees}
+ A decision tree could be defined as form of classification or regression rule that a learner has inducted after his feeding with data. Let's assume we have a set of objects. All these objects have attributes, which  have values. Besides that we also know that each object belongs to one specific class and there are at least two different classes. From that data a decision tree could be inducted. Latter we can use that decision tree for classification - defining to which of the classes any object belongs. Under \enquote{any} here are all objects from the same type as the input objects to be understand. The regression decision tree is similar to the classification one - the difference is that the delight output isn't class label as by classification, but it's a continuous value. For better understanding we will stay on the classification in the further explanations\cite{quinlan1986induction}.\\\\It must be said that the decision tree is used for predictions. In that matter there is no 100\% warranty that the prediction true. In order to increase the probability for correct forecast, we must first select as less redundant data as possible. With other words that selected objects must cover the whole spectrum of different objects, but with no duplicates. When this condition isn't fulfilled, we have the so called underfitting\cite{quinlan1986induction}.\\\\
+Even without underfitting there are still chance that the decision tree doesn't return the correct class label. This may be caused by overfitting - when the decision tree corresponds too much to the training data, but isn't abstract enough (doesn't return correct class labels for other data). In order to fix that problem many ensemble techniques could be used. One of them is the so called \enquote{Random forest}. A random forest is a set of different decision trees that we have generated through e.g. sampling. In order to determine the output value, we chose the mode of the selected classes from all trees in the forest\cite{breiman2001random}.\\\\
+An example decision tree is given on \hyperref[fig:decisionTree]{Fig. \ref{fig:decisionTree}}. It represents the classification of whether or not you should give credit to someone. The nodes are shown as conditions for the values of the object's attributes. The edges are signed with the possible values of the attributes and route the path of the selection. The leafs are the different class label. On the example we see that you will probably get credit, if you are first over 40 years old and own a house, because it will be mortgaged or if you earn enough money to cover your debt.   
+    
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{decisionTree}
+\caption{Decision tree about whether to give credit to someone or not}
+\label{fig:decisionTree}
+\end{figure}
+		 
+\paragraph{Artificial Neural Networks}
+	
+The artificial neural networks are one of the widely employed tools in the machine learning. They simulate the learning and predicting activity of the brain. Similar to the process of teaching humans the artificial neural nets are trained with pairs of data - input variable and his corresponding result value according to the task. Then the net should be able to guess the output value of random input value that wasn't part of the training set. \\\\The  fundamental part of an artificial neural network is the model of the neuron. It consists of three elements\cite{haykin2009neural}:
+\vspace{-\topsep}
+\begin{enumerate}
+\item set of synapses. Each synapse has a weight $w_{kj}$.  When passing through the synapse, the input signal $x_j$ is multiplied by his weight. The weight can hold positive and negative values.
+\item an adder. Sums the multiplied input signals. 
+\item an activation function. The sum of the adder's value and the bias $b_k$ goes as his argument. The function returns the output signal of the neuron. His purpose is to restrict the output signal between specific values e.g. -1 and 1.
+\end{enumerate}
+\vspace{-\topsep}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{neuronModel}
+\caption{Model of the artificial neuron $k$. Source: \cite{haykin2009neural}}
+\label{fig:neuronModel}
+\end{figure}
+
+\hspace{1cm}\\ A scheme of the model could be seen on \hyperref[fig:neuronModel]{Fig. \ref{fig:neuronModel}}. Mathematically the neuron $k$ could be described with the following equations:
+
+\begin{equation}
+u_k = \sum_{j=1}^{m} w_{kj}x_j
+\end{equation}
+
+\begin{equation}
+v_k = u_k + b_k
+\end{equation}
+
+\begin{equation}
+y_k = φ(v_k)
+\end{equation}Shortly explained the multiplication of all input signals $x_j$ with the weights $w_{kj}$ of their synapses are getting summed. This sum is then biased with $b_k$ and the result is put into the activation function $φ(.)$, which produce the output signal $y_k$.\\\\
+The are some possibilities for activation function, but the mostly used are the sigmoid functions. A sigmoid function has a \enquote{S} shaped graph and and return value from 0 to 1 or from -1 to 1. One example is the logistic function.
+\begin{equation}
+φ(v) = \frac{1}{1 + exp(e^{-x})}
+\end{equation}
+One particular reason why the sigmoid functions are mostly employed as activation functions is the fact that they are differentiable. This quality is latter important for the backpropagation. \\\\The simplest neural net consist from only one neuron. Further, we can have many neurons in one single layer. In that  case the net is called single-layer feedforward network. If the net consists from more than one layer, than it's called multilayer feedforward network. Multilayer networks have an input layer, an output layer and could also a hidden layer or many of them. The ones with many hidden layers are called deep networks\cite{haykin2009neural}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{deepNetwork}
+\caption{Schema of deep network: Source: \url{http://www.codeproject.com/KB/cs/BackPropagationNeuralNet/fig1_nnet_thinner.png}}
+\label{fig:deepNetwork}
+\end{figure}  
+  
+\hspace{1cm}\\ The ultimate goal of the training of each neural network is the adjusting of all weight values to such way that by passing an unknown input signal to the network, it will return a correct output signal. In order to achieve that a technique called backpropagation is used. Simply explained we need to pass an input signal through the network. Than we calculate the difference between the real expected value and the output value. With a special loss function and the difference as argument we calculate the new weight for each synapse and than adjust it by propagating the network backwards\cite{rumelhart1986learning}.\\\\ But in order to employ the backpropagation the model have to fulfil two conditions. First, the activation function must be differentiable. The logistic function fulfils that. Second, there has to be no addition of $u_k$ with the bias, but at the same time the effect of the bias must be kept. That's achieved by using an extra dummy synapse with weight $w_{k0} = b_k$ and input signal equals 1 or -1\cite{haykin2009neural}.
+
+  %BackPropagation
+  %Bias in Weight
+  %Referencing
 		 \paragraph{Ensemble Techniques}
 		\subsubsection{General time series forecasting methods}
 \section{Arbitrated Ensemble for Time Series Forecasting}
@@ -222,9 +289,7 @@ In the recent years, as many useful applications of machine learning have been d
 
 \section{Conclusion and Outlook}
 
-\subsubsection*{Acknowledgments}
-
-\cite{VtorCerqueira2017} In the bibliography
+\subsubsection{Acknowledgments}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliographystyle{splncs03}
