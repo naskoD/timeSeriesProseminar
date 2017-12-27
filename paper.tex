@@ -53,6 +53,14 @@ qt=false%
 \usepackage[mathletters]{ucs}
 \usepackage[utf8x]{inputenc}
 
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
 
 %% If you need packages for other papers,
 %% START COPYING HERE
@@ -264,7 +272,7 @@ The are some possibilities for activation function, but the mostly used are the 
 \begin{equation}
 φ(v) = \frac{1}{1 + exp(e^{-x})}
 \end{equation}
-One particular reason why the sigmoid functions are mostly employed as activation functions is the fact that they are differentiable. This quality is latter important for the backpropagation. \\\\The simplest neural net consist from only one neuron. Further, we can have many neurons in one single layer. In that  case the net is called single-layer feedforward network. If the net consists from more than one layer, than it's called multilayer feedforward network. Multilayer networks have an input layer, an output layer and could also a hidden layer or many of them. The ones with many hidden layers are called deep networks\cite{haykin2009neural}.
+One particular reason why the sigmoid functions are mostly employed as activation functions is the fact that they are differentiable. This quality is latter important for the backpropagation. \\\\The simplest neural net consist from only one neuron. Further, we can have many neurons in one single layer. In that  case the net is called single-layer feedforward network. If the net consists from more than one layer, then it's called multilayer feedforward network. Multilayer networks have an input layer, an output layer and could also a hidden layer or many of them. The ones with many hidden layers are called deep networks\cite{haykin2009neural}.
 
 \begin{figure}[h]
 \centering
@@ -273,18 +281,71 @@ One particular reason why the sigmoid functions are mostly employed as activatio
 \label{fig:deepNetwork}
 \end{figure}  
   
-\hspace{1cm}\\ The ultimate goal of the training of each neural network is the adjusting of all weight values to such way that by passing an unknown input signal to the network, it will return a correct output signal. In order to achieve that a technique called backpropagation is used. Simply explained we need to pass an input signal through the network. Than we calculate the difference between the real expected value and the output value. With a special loss function and the difference as argument we calculate the new weight for each synapse and than adjust it by propagating the network backwards\cite{rumelhart1986learning}.\\\\ But in order to employ the backpropagation the model have to fulfil two conditions. First, the activation function must be differentiable. The logistic function fulfils that. Second, there has to be no addition of $u_k$ with the bias, but at the same time the effect of the bias must be kept. That's achieved by using an extra dummy synapse with weight $w_{k0} = b_k$ and input signal equals 1 or -1\cite{haykin2009neural}.
-
-  %BackPropagation
-  %Bias in Weight
-  %Referencing
+\hspace{1cm}\\ The ultimate goal of training each neural network is the adjusting of all weight values to such way that by passing an unknown input signal to the network, it will return a correct output signal. In order to achieve that a technique called backpropagation is used. Simply explained we need to pass an input signal through the network. Then we calculate the difference between the real expected value and the output value. With a special loss function and the difference as argument we calculate the new weight for each synapse and then adjust it by propagating the network backwards\cite{rumelhart1986learning}.\\\\ In order to employ the backpropagation the model have to fulfil two conditions. First, the activation function must be differentiable. The logistic function fulfils that. Second, there has to be no addition of $u_k$ with the bias, but at the same time the effect of the bias must be kept. That's achieved by using an extra dummy synapse with weight $w_{k0} = b_k$ and an input signal equals 1 or -1\cite{haykin2009neural}.
 		 \paragraph{Ensemble Techniques}
 		\subsubsection{General time series forecasting methods}
-\section{Arbitrated Ensemble for Time Series Forecasting}
+\section{Arbitrated Ensemble for Time Series Forecasting} In this section we will present a relatively new method for time series forecasting, which by far gives the most accurate results in comparison to older state-of-the-art methods. It was introduced by a team of Portuguese scientists on the European Conference on Machine Learning that took place on 18-22 September 2017 in Skopje, Macedonia. 
+
 \subsection{General explanation}
-\subsection{Learning Basic-Level Models}
+Many forecasting methods use combination of different forecasters in order to achieve better accuracy by reducing the overfitting effect. So does the method of arbitrated ensemble as well. It assumes that every forecaster has his own expertise and has to be as diverse as possible. Due to the volatility and the seasonality of time series this unique expertise isn't equally distributed over time - some forecasters are more accurate at specific time (more precisely with input data with specific characteristics), other forecasters - at other specific time. Hence, we must build an ensemble of forecasters by first - weighting them according to their expertise on the specific situation - and second - summing the products of each forecaster and his expertise weight \cite{VtorCerqueira2017}. \\\\That leads us to the second essence of the presented method - the arbitrating or the arbitrating architecture. To arbitrate means in our case to decide how important is each forecaster for the final prediction. This happens through a second level of forecasters called meta-learners. Each main forecaster (or learner) has his own meta-learner. The meta-learner predicts the possible error of his learner according to the current input data characteristics. Those error values are latter  translated to forecaster's weights using  softmax function. The greater the predicted error is, the less the weight of the forecaster will be \cite{VtorCerqueira2017}.
+\vspace{-\topsep}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{adeSchema}
+\caption{Schema of the Arbitrated Dynamic Ensemble (ADE). $M_1, ... ,M_m$ are the main forecasters. They produce the predictions $y_1, ... ,y_m$. The meta-forecasters $Z_1, ... ,Z_m$ predict the error values $e_1, ... ,e_m$ of each main forecaster. From those errors the expertise weights $w_1, ... ,w_m$ are generated. At last the weights are used to calculate the weighted average of the predictions. \cite{VtorCerqueira2017}}
+\label{fig:adeSchema}
+\end{figure} 
+ 
+\vspace{-\topsep}
+\hspace{1cm}\\ The above described process is called Arbitrated Dynamic Ensemble (ADE) by his authors. It's illustrated on \hyperref[fig:adeSchema]{Fig. \ref{fig:adeSchema}}. 
+
+\subsection{Data preparation and Learning Basic-Level Models}
 \subsection{Learning Meta-Level Models}
-\subsection{Predicting the next time serie}
+The layer of meta-learners or meta-forecasters has to be trained to arbitrate the importance of each learner for the current prediction. As it was already mentioned, each learner has his own expertise. The task of the learner's corresponding meta-learner is to measure his expertise for a specific situation. In order to do that it has to predict the estimated error of the learner for that situation. The  described strategy is based on an arbitrating architecture, which was originally used with classifies and not with regression forecasters \cite{ortega2001arbitrating}. We train the meta-learner by using data samples corresponding to the following model:\begin{equation}
+e^j = f(I)
+\end{equation} $e^j$ is the absolute error caused by $M^j$, $I$ are the past values of the time series and $f$ is the regression function.\\\\ At the training phase our first task is to produce the out-of-bag predictions (OOB). We will than use them to train the meta-learners once before the start of the actual prediction session and once every time after predicting $y_t+1$. So, to produce the OOB we split the training set into $\beta$ equal blocks. We train the learners $M$ with the first block of data and then test them with the second. Then we merge the first and the second block, train the learners with this new larger block and test them with the third block. The operation continues up to the last block.\\\\Instead of using all base learners by predicting, it's a common sense to use only the best of them. We call the used learners the Committee of Models for Prediction. It contains the $\alpha$\% of the best forecasters( the one with the lowest error) in the last $\Omega$ observations. This reduction saves computational power from retraining of meta-learners that have learners with very low weight. Nevertheless, no matter whether his base learner is part of the committee of models or not, each meta-learner is trained on each $\lambda$ iterations. You can see the meta-learning algorithm in \hyperref[alg:metalearning]{Algorithm  \ref{alg:metalearning}}.
+    
+\begin{algorithm}[h]
+
+\caption{Metalearnig $Z$}\label{alg:metalearning}
+\begin{algorithmic}[1]
+
+\Require Available observations at runtime $Y_{ts}$; Embedding Dimension $K$; Training
+Signal $\lambda$; meta-committee ${}^{\alpha}Z$
+\State $\text{Embed $Y_{ts}$ into $Y_{ts}^{K}$} \rightarrow I$
+\ForAll{$Z^{j} \in {}^{\alpha}Z \text{ and not trained in the last training signal $\lambda$ }$}
+\State $\text{train $Z^{j}$ to model: $e^{j} = f(I)$}$
+\EndFor
+\State $\text{Return ${}^{\alpha}Z$}$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Predicting the next time series}
+ After the Committee of the most accurate $\alpha$\% base learners ${}^{\alpha}M$  is determined, we use the corresponding meta-learners ${}^{\alpha}Z$ to predict their possible error $e^j$. Then we put these errors into the softmax function and thus we generate the base learner's weighs\cite{VtorCerqueira2017}. This process is explained by the following equation:
+ \begin{equation}
+w^{j}_{t+1} = \frac{exp(-e^{j})}{\sum_{j \in {}^{\alpha}M} exp(-e^{j})}
+\end{equation} It's interesting fact the the softmax function is used for neural nets modelling. What's more, it wasn't used by far for error translation.\\\\ The last step of the prediction is the calculation of the weighted average by summing the products of all predictions of the committee with their weights:
+ \begin{equation}
+y_{t+1} = \sum_{j \in {}^{\alpha}M} y^{j}_{t+1}.w^{j}_{t+1}
+\end{equation}You can see the predicting $y_{t+1}$ algorithm in \hyperref[alg:predicting]{Algorithm  \ref{alg:predicting}}.
+
+
+\begin{algorithm}[h]
+\caption{Predicting $y_{t+1}$}
+\label{alg:predicting}
+\begin{algorithmic}[1]
+\Require $K, M, Z,\alpha, \Omega, {}^{\alpha}M, {}^{\alpha}Z$
+\State $\text{Embed the previous $K-1$ values  into $Y_{t+1}^{K}$}$
+\State $\text{Get meta-predictions $e^{j}_{t+1}$ from $Z^{j} \in {}^{\alpha}Z$}$
+\State $\text{Compute weigths $w^{j}_{t+1} =  exp(-e^{j}_{t+1})/\sum_{Z^{j} \in {}^{\alpha}Z} exp(-e^{j}_{t+1})$}$
+\State $\text{Get predictions $y^{j}_{t+1} $ from models $M^{j} \in {}^{\alpha}M$}$
+\State $\text{Compute final predictions $y_{t+1} = \sum_{j=1}^{m} y^{j}_{t+1}.w^{j}_{t+1}$}$
+\State $\text{Add $y_{t+1}$ to $Y_{ts}$}$
+\State $\text{Update Committees ${}^{\alpha}M$ and ${}^{\alpha}Z$ according to $\alpha$ and $\Omega$}$
+\State $\text{Return $y_{t+1}$ and go back to the metalearning step (Algorithm \ref{alg:metalearning})}$
+\end{algorithmic}
+\end{algorithm}
 \subsection{Performance comparison with general time series forecasting methods}
 
 \section{Conclusion and Outlook}
