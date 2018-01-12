@@ -283,7 +283,103 @@ One particular reason why the sigmoid functions are mostly employed as activatio
   
 \hspace{1cm}\\ The ultimate goal of training each neural network is the adjusting of all weight values to such way that by passing an unknown input signal to the network, it will return a correct output signal. In order to achieve that a technique called backpropagation is used. Simply explained we need to pass an input signal through the network. Then we calculate the difference between the real expected value and the output value. With a special loss function and the difference as argument we calculate the new weight for each synapse and then adjust it by propagating the network backwards\cite{rumelhart1986learning}.\\\\ In order to employ the backpropagation the model have to fulfil two conditions. First, the activation function must be differentiable. The logistic function fulfils that. Second, there has to be no addition of $u_k$ with the bias, but at the same time the effect of the bias must be kept. That's achieved by using an extra dummy synapse with weight $w_{k0} = b_k$ and an input signal equals 1 or -1\cite{haykin2009neural}.
 		 \paragraph{Ensemble Techniques}
+In machine learning and statistics, combining forecasts from different models are recognised as one of the most successful approaches to prediction tasks and are used to obtain better predictive performance, to enhance accuracies and produce overall improved results. 
+%(e.g. Dietterich (2000); Brown and Kuncheva (2010))
+\\\\However, forecast combination is a challenging task. 
+The idea is to find a suitable hypothesis that will make adequate predictions for a particular problem and then ensemble methods are essentially strategies for creating multiple hypotheses and combining them to generate a better hypothesis. This usually produces more accurate solutions than a single hypothesis would. Using adequate ensemble techniques guarantees aggregation of the forecasting strengths, diminution of their weaknesses and efficient error reduction.\\\\There is a recent suggestion that there is an ideal number of component classifiers called "the law of diminishing returns in ensemble construction". 
+%(https://www.researchgate.net/profile/Hamed_R_Bonab)
+Because the number of component classifiers has a high impact on the accuracy of the prediction, having more or less than this ideal number would deteriorate the accuracy. \\\\We distinguish one ensemble approach from another by the way they manipulate the training data, by the way of selection of individual hypotheses and by the way in how those are aggregated to the final decision. 
+%Chapter 13 ensemble methonds
+In this particular section we will cover some commonly used ensemble approaches, namely Bagging, AdaBoost and Stacking(?).
+
+\subsubsection{1. Bagging}
+%chapter 13 cite all refferences.
+\hspace{1cm}\\\\This method is introduced by Breiman [ref] and is used for training each learner with help from a bootstrap sample from a training set S and then combining each output by uniform averaging. To generate each individual predictor, no information about the predictions of the other models is integrated. For this particular reason this technique is viewed as an algorithm with only an implicit search for diversity. By averaging a set of predictors which are not trained by the same bootstrap sample, there might be a reduction of the influence of the outliers [ref]. Taking that into consideration, resampling seems to have a similar effect to that of robust M-estimators in statistics [ref],  meaning the influence of sample points is restricted using suitable loss functions. Therefore, it is possible that this approach will significantly reduce the variance of the bagged prediction, especially for unstable base learners [ref]. \\\\Because of the fact that traditional bootstrap breaks the sequence of data points, there is a possibility for a bad generalization in time series problems. Inoue and Kilian adjust to the situation by adapting the way that Bagging construct its training samples [ref]. In order to simultaneously capture the reliance between the examples and to encourage diversity,  the authors have to use resampling blocks of instances from the original training set with replacement. This process is called "block bootstrap", and the block size is chosen to capture the dependence in error term [ref].
+\\\\Bagging, according to a simulation study,  significantly reduces the out-of-sample mean squared error of the predictions. By giving a weight for each example that resemble the number of times the point is selected in the bootstrap sample, the training samples in [ref] maintain the temporal arrangement of the points. In this manner and example is weighted to zero if it has not been selected in the sample. Conclusively, the output of the ensemble for a single instance is computed as a weighted average, where the weight of each predictor is the weighted root mean squared error (WRMSE). [ref]
+
+\subsubsection{2. AdaBoost}
+%chapter 13 cite all ref
+\hspace{1cm}\\\\This method is introduced by Freud and Schapire in 1997 [ref]. The idea is to train a single predictor to minimize the residual of the previous ensemble in each round, which can be described as a sequentially coupled approach fitting an additive model through a forward stagewise strategy [ref]. The theoretical background of the algorithm is based on the "PAC" learning model [59] and its purpose is to create a method that combines a set of weak learners to generate a strong learning algorithm. This approach offers good generalization ability but on the other hand, because of the fact that the learners are coupled sequentially it is computationally expensive. \\\\Maintaining a sampling distribution over the training set is the main purpose behind AdaBoost. With the start of the algorithm, all weights are set to $w^1_m = 1/N, m = 1,..., M$. Here,  $w^n_m$ is the weight of the $m$-th example at round $n$.  The weak learner is forced to focus on the misclassified examples of the training set at each round of the algorithm, because of the specific way in which the weights of the incorrectly classified examples are increased. Hence, instead of focusing on the correctly classified examples, the algorithm concentrates on the "hard" examples, making it possible for AdaBoost to outperform Bagging in normal scenarios. Nevertheless, under noisy data the low generalization capacity of AdaBoost makes the robustness of Bagging generally superior. \\\\ In the field of time series, Shresta and Solomatine introduce AdaBoost.RT [61]. Here the absolute relative error (ARE) for the learner $n$ is computed by considering the error over a threshold $φ$. The weights of the instances with errors lower than $φ$ are reduced by the updating rule, and afterwards normalized in order to make them a distribution. Conclusively, F is obtained as the weighted average of the individual learners, with weights equal to - $log(β_n)$. \\\\For tide levels forecasting, Canestrelli uses Drucker's AdaBoost.R2(62).  This approach quantifies the loss for each training sample with the help of one of the three possible functions: 
+\begin{enumerate}
+\item Absolute percentage error (APE):
+\begin{equation}
+φ(v) = \frac{|f_n(x_m)-y_m|}{max_{m=1,...,M} |f_n(x_m)-y_m|}
+\end{equation}
+\item Quadratic:
+\begin{equation}
+w^n_m = (f_n(x_m)-y_m)^2 max_{m=1,...,M} (f_n(x_m)-y_m)^2
+\end{equation}
+\item Exponential:
+\begin{equation}
+1 - exp\frac{-|f_n(x_m)-y_m|}{max_{m=1,...,M} |f_n(x_m)-y_m|}
+\end{equation}
+\end{enumerate}
+
+\hspace{1cm}\\\\According to the weight distribution, the confidence of the predictor is computed as a function of the weighted average error. In order to increase their chances to appear in the following training sample, the instances with higher errors increase their weights. Then the output of the ensemble is computed as the weighted median. \\\\ For recurrent neural networks as the base learner, Assaad et al. adapts this method [63]. The following changes are present: first, the example errors are weighted for updating the RNN weights instead of resampling. The motivation behind this to keep the temporal dependence of the training data. Second, the weight of the wrong modeled examples is further increased using an additional parameter. \\\\ As an adaptation of AdaBoost.R2 technique with Genetic Programming (GP) as the base learner, Souza et al. [64] proposes the BCC algorithm. This essentially computes the error of each example with the help of the exponential loss function.  And by including a multiplicative factor which depends on the correlation among the learner predictions and the true targets, the algorithm updates the weights. \\\\ Finally, as a combination of Ellman Newtorks using a weighted linear function, Goh et al. [65] introduces the Modified AdaBoost. On top of that the error of each instance is computed by taking into account two loss functions. These are widely used for analysing drug dissolution profiles. [chapter 13] \\\\ The goal of AdaBoost, according to the gradient descent perspective of AdaBoost [8,66], is to add the i-th learner in the ensemble which minimizes
+\begin{equation}
+(β_n, f_n)=argmin_{(β,f)} \sum_{m=1}^{M} l(y_m, F(x_m)).
+\end{equation}
+Here $F(x_m)=F_{n-1}(x_m)+ β_n f_n (x_m)$. With each following step, the algorithm selects the hypothesis $f_n$ which minimizes Eq. (8) over the sample distribution $w^n$. Then it performs a line search along the direction. From this perspective, Buhlmann and Yu [67] introduce a gradient boosting method with the quadratic loss function which is adapted for time seies forecasting for load forecasting [68], finance [69], economics [70] and production [71].
+
+\subsubsection{3. Stacking}
+\hspace{1cm}\\\\ Stacking, also known as stacked generalization, first introduced by David H. Wolpert [?] in 1992, is a strategy for minimizing the generalization error rate of one or more generalizers. The method works by deducting the biases of the generalizers with respect to a provided learning set. For instance it uses the guess of the original generalizers as input when taught with part of the learning set and trying to guess the rest of it, and the correct guess for output. The difference between using multiple generalizers and using a single generalizer is that in the first case, stacked generalization can be considered as a more sophisticated version of cross-validation for it exploits a better strategy than cross-validation's crude winner-takes-all [?] for combining the individual generalizers. In the second case, when used with a single generalizer, stacked generalization is a schema for estimating the error of a generalizer, trained on a particular learning set and then asked a particular question. \\\\Stacking has a distinguishing feature and that is that the information fed up the net of generalizers comes from multiple partitionings of the original set, feeding information from one set of generalizers to another, then making the final guess. Each of these generalizers splits up that learning set into two subsets. Collecting information about the biases of the generalizing behaviour of the original generalizers with respect to the learning set is the purpose of these pairs of subsets. This collected bias information is the one fed up the net. One can conclude that stacked generalization as a means of estimating and correcting for the biases of the constituent generalizers with respect to the corresponding learning set, can be expected to reduce the generalization error rate for many generalization problems, according to the experiments done in [?].
+		 
 		\subsubsection{General time series forecasting methods}
+\paragraph{Linear}
+One way to forecast the value of an observation $x_t$ using previous observations is to use linear stochastic difference equation models, with random input. Without any doubt the linear autoregressive integrate moving average (ARIMA) model is the most important class of such models. The seasonal ARIMA $(p, d, q) × (P, D, Q)^S$ model for such time series is represented by
+\begin{equation}
+Φ_P (B^S)φ_p(B)∇^D_S ∇^d x_t = Θ_Q(B^S)θ_q (B)ε_t.
+\end{equation}
+Here $φ_P (B^S)$ is the nonseasonal autoregressive operator of order p, $θ_q (B)$ is the nonseasonal moving average operator of order q, $Φ_P (B^S), Θ_Q(B^S)$ are the seasonal autoregressive and moving average operator of order P and Q and the terms $x_t$ and $ε_t$ are the time series and a white noise respectively.Additionaly it is assumed that $E[ε_t|x_{t−1}, x_{t−2},...] = 0$. This condition is satisfied for example when $ε_t$ are
+zero mean, independent and identically distributed and independent of past $x_ts$. It is assumed throughout that $ε_t$ has finite variance $σ^2$. The backshift operator B shifts the index of a time series observation backwards,  e.g. $Bx_t = x_{t−1}$ and $B^k x_t = x_{t−k}$. Akaike’s information criterion (AIC) or by Bayes information criterion (BIC) [8] select the order of the operator and the parameters $Φ_1,...,Φ_P , φ_1,...,φ_p, Θ_1,...,Θ_Q$ and $θ_1,...,θ_q$ are selected from the time series data using optimization methods such as maximum likelihood [1] or  robust methods such as recursive generalized maximum likelihood [9]. The system generating the time series must be invariant and stable, which means that the ARMA-models is limited by the requirement of stationarity and invertibility of the time series.. Moreover, the residuals must be independent and identically distributed [10]. \\\\In order to be useful for predictions, the ARMA-models require a stationary time series. Therefore, for all $t$:
+\begin{equation}
+E[x_t] = μ; V[x_t] = σ^2; COV[x_t, x_{t−k} ] = γ_k 
+\end{equation}
+for a series to be weak stationary.
+\\\\Some of the most popular tests for diagnostic checking of the overall ARMA models are the "portmanteau test" proposed by [11] and the robust version of it by [12]. The tests are based on a sum of squared correlations of the estimated residuals suitably scaled. [chapter 13]. 
+\paragraph{Non-linear}
+There has been increasing interest in non-linear models recently. The reason for that being that while theory and practice are mostly concerned with linear methods and models (like ARIMA), many time series exhibit features which cannot be explained in a linear framework. Bilinear models [13], classification and regression trees [14], threshold autoregressive models [15] and Projection Pursuit Regression [16] are all great examples for non-linear models. Although non-linear models can be substantial in some instances, it is usually challenging to compute forecasts more than one step ahead [17]. \\\\ As a generalization of the linear ARMA-models to the non-linear case, proposed by [18], NARMA follows the equation
+\begin{equation}
+x_t = h(x_{t−1}, x_{t−2},..., x_{t−p}, ε_{t−1},...,ε_{t−q} ) + ε_t .
+\end{equation}
+Here $h$ is an unknown smooth function, and as earlier described, it is assumed that $E[ε_t|x_{t−1}, x_{t−2},...] = 0$ and that variance of $ε_t$ is $σ^2$. In this case the conditional mean predictor based on the infinite pas observation is
+\begin{equation}
+x'_t = E[h(x_{t−1}, x_{t−2},..., x_{t−p}, ε_{t−1},...,ε_{t−q} )|x_{t−1}, x_{t−2},...]. 
+\end{equation}
+We assume the invertibility of the NARMA model in the sense that there exists a function $ν$ such as
+\begin{equation}
+x_t = ν(x_{t−1}, x{t−2}, . . .) + ε_t . 
+\end{equation}
+Then given the infinite past of observations $x_{t−1}, x_{t−2},...,$ one can compute the $ε_{t−1}$ in (11) exactly:
+\begin{equation}
+ε_{t−j} = κ(x_{t− j}, x_{t− j−1}, . . .), j = 1, 2,..., q. 
+\end{equation}
+In this case the mean estimate is
+\begin{equation}
+x'_t = h(x_{t−1}, x_{t−2},..., x_{t−p}, ε_{t−1},...,ε_{t−q} ).
+\end{equation}
+Here the $ε_{t− j}$ are specified in terms of present and past $x_u$ ’s. The predictor of (15) has a mean square error $σ^2$. We cannot compute (14) and (15) due to the finite observation record. It makes sense to approximate the conditional mean predictor (15) by the recursive algorithm
+\begin{equation}
+x'_t = h(x_{t−1}, x_{t−2},..., x_{t−p}, ε'_{t−1},..., ε'_{t−q} ), 
+\end{equation}
+\begin{equation}
+ε'_{t− j} = x_{t− j} − x'_{t− j}, j = 1, 2,..., q,
+\end{equation}
+with the following initial conditions
+\begin{equation}
+x'_0 = x'_{−1} =...= x'_{−p+1} = ε'_0 =...= ε'_{−q+1} = 0. 
+\end{equation}
+For the special case of non-linear autoregressive model (NAR), it is easy to check that (11) is given by
+\begin{equation}
+x_t = h(x_{t−1}, x_{t−2},..., x_{t−p}) + ε_t .
+\end{equation}
+In this case, the minimum mean square error (MSE) optimal predictor of $x_t$ given $x_{t−1}, x_{t−2},..., x_{t−p}$ is the conditional mean (for $t ≥ p + 1$).
+\begin{equation}
+x'_t = E[x_t|x_{t−1},..., x_{t−p}] = h(x_{t−1},..., x_{t−p}).
+\end{equation}
+This predictor has mean square error $σ^2$.
+\paragraph{Concept Drift}
+Concept drift refers to the fact that data is obtained form a non-stationary environment [19] and it means that the underlying law of probability changes regarding the time series. It can be described as any scenario in the classification setting where the posterior probability of  a class $c_k$ that a given instance belongs, $P(C_k|x)= P(x|c_k)P(c_k)/P(x)$, changes over time as follows: $P_{t+1}(c_k|x)≠ P_t(c_k |x)$. $P(x)$ represents probability of an instance  $x ∈ X$. $P(c_k|x)$ is the likelihood of observing a data point $x$ within a particular class. $P(c_k)$ defines the class prior probabilities, and relates class balance to the overall underlying law of probability. An observation of change in $P(x)$ is independent of the class labels. For that reason it might be insufficient to characterize a concept drift. \\\\ There exist two ways of adapting a model to a concept drift. The first approach is to adapt a single model so that it can learn example by example and adapt to a changing pattern. The second approach is to create an ensemble of models. According to Zang et al. [20], both examples have the same capacity to handle stream data, with the inclusion of a concept drift. While in terms of efficiency the incremental single algorithms are favourable, the ensembles are more stable and better-adapting to the concept drift.	
 \section{Arbitrated Ensemble for Time Series Forecasting} In this section we will present a relatively new method for time series forecasting, which by far gives the most accurate results in comparison to older state-of-the-art methods. It was introduced by a team of Portuguese scientists on the European Conference on Machine Learning that took place on 18-22 September 2017 in Skopje, Macedonia. 
 
 \subsection{General explanation}
@@ -301,6 +397,28 @@ Many forecasting methods use combination of different forecasters in order to ac
 \hspace{1cm}\\ The above described process is called Arbitrated Dynamic Ensemble (ADE) by his authors. It's illustrated on \hyperref[fig:adeSchema]{Fig. \ref{fig:adeSchema}}. 
 
 \subsection{Data preparation and Learning Basic-Level Models}
+Time series is generally a temporal sequence of values. In our case $Y={y_1,y_2,...,y_t}$. Here $y_i$ is the value of $Y$ at time $i$. To represent Y in an Euclidean space with embedding dimension K, time delay embedding is used. Now we have produced a set of observation which are based on the past $K$ lags of the time series. This is accomplished by mapping the time series $Y$ into the embedding vectors $V_{N-K+1} = {v_1,v_2,...,v_{N-K+1}}$. Here each $v_i = <y_{i-(K-1)},y_{i-(K-1)},...,y_i>$. \\\\ Three main steps are essential for the proposed methodology in ADE for time series prediction:
+\begin{enumerate}
+\item An offline training step of $M$, the set of base-learners which are used to predict future values of $Y$ and the online iterative steps.
+\item Training or updating of meta-learners Z, which model the expertise of base-learners.
+\item Prediction on $y_{i+1}$ using $M$, dynamically weighed according to Z.
+\end{enumerate}
+Individual forecasters $m$ are trained in the offline learning phase [Algo1]. Each $M^j, ∀j ∈ {1,...,m}$ is built using the available time series $Y^K_{tr}$. The goal is the prediction of the next value of the series, $y_{t+1}$. Training and testing sets are named $tr$ and $ts$, correspondingly. \\\\ In order to apply standard regression learning models, we have to embed the time series to an Euclidean space. Then $M$ is comprised by a set of heterogeneous models, like for example Neural Networks and Gaussian Processes. Such models provide different inductive biases and assumptions regarding the process generating the data. Therefore, it is expected models to differentiate in competence across the time series.
+
+\begin{algorithm}[h]
+
+\caption{Learning $M$}\label{alg:learning}
+\begin{algorithmic}[1]
+
+\Require Available Time Series $Y$; Embedding Dimension $K$
+\State $\text{Embed $Y$ into $Y_{tr}^{K}$}$
+\ForAll{$M^j \in M$}
+\State $\text{train $M^j$ using $Y_{tr}^K$}$
+\EndFor
+\State $\text{Return $M$}$
+\end{algorithmic}
+\end{algorithm}
+
 \subsection{Learning Meta-Level Models}
 The layer of meta-learners or meta-forecasters has to be trained to arbitrate the importance of each learner for the current prediction. As it was already mentioned, each learner has his own expertise. The task of the learner's corresponding meta-learner is to measure his expertise for a specific situation. In order to do that it has to predict the estimated error of the learner for that situation. The  described strategy is based on an arbitrating architecture, which was originally used with classifies and not with regression forecasters \cite{ortega2001arbitrating}. We train the meta-learner by using data samples corresponding to the following model:\begin{equation}
 e^j = f(I)
@@ -346,7 +464,98 @@ y_{t+1} = \sum_{j \in {}^{\alpha}M} y^{j}_{t+1}.w^{j}_{t+1}
 \State $\text{Return $y_{t+1}$ and go back to the metalearning step (Algorithm \ref{alg:metalearning})}$
 \end{algorithmic}
 \end{algorithm}
+
 \subsection{Performance comparison with general time series forecasting methods}
+In order to highlight the benefits of the arbitrated dynamic ensemble (ADE) method, performance wise, versus other state-of-the-art methods for time series prediction tasks, we will take a look at the experiments [paper] performed to validate ADE. In the following subsections we will cover the setup, the results, strategies and limitations.
+\subsubsection{Experimental Setup}
+\hspace{1cm}\\\\ The mean squared error (MSE) is used to evaluate the used methods on 10 Monte Carlo repetitions. Then for each one of these repetitions, a randomly chosen point in time is set from the full time window available for each series. The previous window $N$ consists of 50\% of the data set and the following window consists of 30\%. They are used for training the ensemble and testing, respectively. For comparison between the results collected by the different methods, the non-parametric Wilcoxon Signed Rank test was used. The experiments were carried out with the help of performanceEstimation [28] R package. In addition to that, two different embedding dimensions were tested by setting K to 7 and 15. 
+\subsubsection{Ensemble Setup and Baselines}
+\hspace{1cm}\\\\ In this experiment, the following base-models $M$ were present:
+\begin{itemize}
+\item SVM: Support Vector Machines [15];
+\item NN: Feed Forward Neural Nets [29];
+\item GP: Gaussian Processes [15];
+\item GLM: Generalized Linear Models [11];
+\item RF: Random Forests [31];
+\item GBR: Generalized Boosted Regr. [24];
+\item MARS: MARS [18];
+\item RBR: Rule-based Regression [16];
+\item PPR: Projection Pursuit Regr. [23].
+\end{itemize}
+Each of the individual learners is used with different parameter settings, which helps to add up to 40 models. Also Random Forest is used as a meta-learner. The meta-learners are retrained every 10 observations. Up to the upcoming prediction, each set contains the out-of-bag (OOB) samples from the training set and the observations from the test set. Only half of the forecasters are included in the committee for each prediction, namely the forecasters with the best performance in the last 50 observations. \\\\ The following 8 approaches were compared against the performance of ADE: 
+\begin{itemize}
+\item Stacking: An adaptation of stacking [30] for time series, where a meta-model is learned using the base-level predictions as attributes; 
+\item Arbitrating: The original arbitrating approach [21];
+\item S: A static heterogeneous ensemble. All base learners are simply averaged using the arithmetic mean [26];
+\item S-W: A weighted linear combination of the models, with weights according to their performance using all past information [14];
+\item AEC: The adaptive combination procedure AEC [25];
+\item S-WRoll: The adaptive combination method, with a linear combination of the forecasters according to their recent performance [19];
+\item ERP: The adaptive combination procedure proposed by Timmermann [27];
+\item ARIMA: A state-of-the-art method for time series forecasting;
+\end{itemize}
+The following variants of ADE (with Random Forest as a meta-learner) were tested:
+\begin{itemize}
+\item ADE-Arb: A variant of ADE in which at each time point the best model is selected to make a prediction. The one with lowest predicted loss is the best;
+\item ADE-meta-runtime: A variant of ADE in which there is no blocked prequential procedure to obtain OOB samples to increase the data provided to the meta-learners. In this scenario $Z$ is trained in data obtained only at run-time;
+\item ADE-all-models: A variant of ADE, but without the formation of a committee. In this case, all forecasting models are weighed according to their expertise in the input data;
+\item ADE-linear-committee: A variant of ADE, but using a linear transformation for weighting the base learners according to their predicted loss, instead of the proposed softmax;
+\item ADE-meta-GP: A variant of ADE, but using a Gaussian Process with a linear kernel as meta-learner instead of a Random Forest;
+\end{itemize}
+\subsubsection{Results}
+\hspace{1cm}\\\\ In the following Figure [6] are presented the paired comparisons between the proposed method, ADE, and the baselines. The proposed method shows significantly more wins and losses. 
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{pairedComparison}
+\caption{Paired comparisons between the proposed method and the baselines for different embedding dimensions. The Rank column stands for the average rank and respective standard deviation of each model. A rank of 1 in an
+experiment means that the model was the best method.}
+\label{fig:paired comparison}
+\end{figure}
+
+\hspace{1cm}\\\\ The post-hoc Bonferroni-Dunn test corresponding to the other baselines in the literature and baselines which are variants of ADE are to be seen in the critical difference diagrams (Figure [7] and Figure [8], respectively).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{criticalDifference1}
+\caption{Critical difference diagram for the post-hoc Bonferroni-Dunn test relative to baselines (K = 7).}
+\label{fig:critical difference diag.1}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{criticalDifference2}
+\caption{Critical difference diagram for the post-hoc Bonferroni-Dunn test relative to ADE variants (K = 7).}
+\label{fig:critical difference diag.2}
+\end{figure}
+
+\hspace{1cm}\\\\ These results display the performance of ADE in comparison to the state-of-the-art approaches for time series forecasting tasks. In relation to the meta-learning layer, using Random Forests generated better results than Gaussian Processes. Against meta-learning strategies for combining models such as Stacking there aren't any significant differences other than a better average rank. In connection to Arbitrating, ADE shows a much better average rank, proving that the introduced components are fundamental for the accomplished performance. Therefore, it is more beneficial to use a weighing scheme in our Arbitrating strategy instead of choosing the predicted best forecaster as originally proposed [21]. Because of the consistent advantage of ADE over ADE-meta-runtime and ADE-all-models, we can conclude that it is very beneficial to get OOB predictions from the training set to increase the data used to train the meta-learners, improving their fit and cutting down the ensemble for each prediction. This means the introduction of a committee is really favourable. Relative to the ADE-linear-committee, the proposed method shows that the softmax function provides a superior predictive performance in comparison to the linear transformation. Against ADE-Arb, according to Figure 7 and 8, the difference is statistically significant. 
+
+\subsubsection{Training Strategies}
+\hspace{1cm}\\\\ Another aspect that has to be considered is how the performance of ADE can vary in dependence of the updating strategy for the base and meta-models. In the paper [ref] are examined the following approaches:
+\begin{itemize}
+\item A: $M$ are not updated and $Z$ are updated in chunks of $\lambda$ observations;
+\item B: $M$ and $Z$ are both trained only in the training set;
+\item C: $M$ and $Z$ are both re-trained every $\lambda$ observations;
+\item D: $M$ is re-trained every $\lambda$ observations but $Z$ is trained only in the training data.
+\end{itemize}
+These strategies are compared using the mean absolute scaled error (MASE):
+\begin{equation}
+\frac{\sum^n_{i=1}|e_i|}{\frac{n}{n-1} \sum^n_{i=2}|y_i-y_{i-1}|}
+\end{equation}
+The results of this test are in the following Figure [9]. The figure displays the average MASE and average runtime and corresponding deviations of ADE using the different re-training strategies.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{trainingStrategies}
+\caption{ Average MASE and respective deviation of the different retraining strategies in terms of predictive performance (a) and computational time spent in minutes (b).}
+\label{fig:training Strategies}
+\end{figure}
+
+\hspace{1cm}\\\\
+The results conclude that updating the meta-learners and not updating the base-learners (both in predictive performance and runtime) is better than the opposite strategy.
+
+\subsubsection{Limitaions}
+\hspace{1cm}\\\\ While the advantages of the proposed method are evident, and its performance is competitive with the commonly used stacked generalization method [30], ADE has also limitations. One of them is the inability to directly model inter-dependencies among the forecasters. Another is the fact that base-learners might get outdated, but thanks to the modular architecture of the arbitration approach, models can be added (or removed) as required.
 
 \section{Conclusion and Outlook}
 
